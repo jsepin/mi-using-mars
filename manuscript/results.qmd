@@ -25,7 +25,7 @@ We conducted a simulation study following closely the methodology outlined by @L
 ```{r}
 #| label: tbl-qualitative_assessment
 #| echo: false
-#| tbl-cap: "**Qualitative overall assessment across MI methods:** (++) very good performance, (+) good performance, (-) satisfactory performance, (--) least satisfactory performance. Overall, MARS achieved the lowest bias and best coverage, though it had relatively large standard errors and moderate computation time. The XGBoost-based MI method (MixGB) and CART showed moderate bias, but CART was considerably faster. RF and PMM displayed the least satisfactory performance overall. The linear regression-based MI method with LASSO-selected variables (lasso.select.norm) performed well in terms of bias and coverage but had relatively long computation times."
+#| tbl-cap: "**Qualitative overall assessment across MI methods:** (++) very good performance, (+) good performance, (-) satisfactory performance, (--) least satisfactory performance. Overall, MARS achieved the lowest bias and best coverage, but had relatively large standard errors and moderate to long computation times depending on the sample size. The XGBoost-based MI method (MixGB) and CART showed moderate bias, but CART was considerably faster. RF and PMM displayed the least satisfactory performance overall. The linear regression-based MI method with LASSO-selected variables (lasso.select.norm) performed well in terms of bias and coverage but had relatively long computation times."
 
 # create qualitative assessment table
 dd <- data.frame(
@@ -74,7 +74,7 @@ As illustrated in @fig-p_secondary_combined, increasing the sample size did not 
 Finally, we recorded the time required for each imputation method to complete, as shown in @fig-time.
 The imputations were performed on a desktop computer equipped with an Intel Core i7-14700 CPU (max. 5.4 GHz), 32 GB RAM, and running Ubuntu 24.04.1 LTS (64-bit). The analyses were conducted in R version 4.4.2, with parallel processing across `r meta$cores` cores for all computations. The entire simulation study took approximately `r my_time_english(x = meta$time)` to complete. Overall, the time taken for imputations increased with the number of explanatory variables. While most of the MI methods performed similarly in terms of imputation time, the MARS- and XGBoost-based MI methods had relatively long imputation times, which also increased with sample size. The LASSO-based MI method was relatively slow on average, but its performance remained stable with respect to sample size.
 
-![Time required for imputation methods: This boxplot displays the distribution of individual imputation times for each method across `r unique(methods_comp$Nsim)` simulation runs, showing the time taken to construct $m=$ `r unique(methods_comp$m)` imputed datasets for univariate missingness.](../simulation/figures/p_time.png){#fig-time fig-align="center" width="70%"}
+![Time required for imputation methods: This boxplot displays the distribution of individual imputation times for each method across `r unique(methods_comp$Nsim)` simulation runs, showing the time taken to construct $m=$ `r unique(exp_factor$m)` imputed datasets for univariate missingness.](../simulation/figures/p_time.png){#fig-time fig-align="center" width="70%"}
 
 
 

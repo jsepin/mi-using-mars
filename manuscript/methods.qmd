@@ -93,7 +93,7 @@ height <- 4
 # saving png
 png("../simulation/figures/compMARS.png"
   ,width=width, height=height, units = "in"
-  ,res = 1200 #100
+  ,res = 100
 )
 print(p)
 dev.off()
@@ -101,14 +101,14 @@ dev.off()
 # saving tiff
 tiff("../simulation/figures/compMARS.tiff"
    ,width=width, height=height, units = "in"
-   ,res = 1200 #800
+   ,res = 800
    ,compression = "lzw"
 )
 print(p)
 dev.off()
 ```
 
-![Illustrative comparison of CART, MARS, and GAM predictions in a simple parametric setting. CART exhibits a stepwise prediction pattern, while the GAM provides a fully smooth prediction. MARS predictions offer a balance between the two.](../simulation/figures/compMARS.png){#fig-compMARS fig-align="center"}
+![Illustrative comparison of CART, GAM, and MARS predictions in a simple parametric setting. CART exhibits a stepwise prediction pattern, while the GAM provides a fully smooth prediction. MARS predictions offer a balance between the two.](../simulation/figures/compMARS.png){#fig-compMARS fig-align="center"}
 
 The `R` package `mice` allows for user-specified imputation functions in a straightforward manner, making it easy to implement and test alternative MI methods. We implemented the MARS method for MI in a function called `mice.impute.mars` (code available in the supplementary material) using the `R` package `earth` ("Enhanced Adaptive Regression Through Hinges") [@earth] to fit the MARS method.
 
@@ -118,17 +118,17 @@ Data can be missing completely at random (MCAR) if the probability of missingnes
 
 <!-- To ensure the imputations were statistically proper as defined by @Rubin1987 (p. 118), we accounted for the uncertainty arising from missing data. We achieved this by fitting the MARS method on a bootstrapped sample of the observed dataset and using the resulting predictions, augmented by an error term, to impute the missing values. For continuous variables, the error term was drawn from a standard normal distribution and scaled by the mean squared residuals from the MARS fit. -->
 
-To ensure the imputations were statistically proper as defined by @Rubin1987 (p. 118), we accounted for the uncertainty arising from missing data.
-We achieved this by fitting the MARS model on a bootstrapped sample $\left(\dot{Y}_\text{obs}, \dot{\boldsymbol{X}}_{\text{obs}}\right)$, with the same number of observations ($n_\text{obs}$) as the observed data $\left(Y_\text{obs}, \boldsymbol{X}_{\text{obs}}\right)$. The predictions from the fitted MARS model for the missing observations, $\hat{Y}_\text{mis} = \hat{f}\left(\boldsymbol{X}_\text{mis}\right)$, are then augmented by an error term, which is drawn from a standard normal distribution and scaled by the mean squared residuals from the MARS fit: 
+To ensure the imputations were statistically proper as defined by @Rubin1987 (pp. 118), we accounted for the uncertainty arising from missing data.
+We achieved this by fitting the MARS model on a bootstrapped sample $\left(\dot{Y}_\text{obs}, \dot{\boldsymbol{X}}_{\text{obs}}\right)$, with the same number of observations ($n_\text{obs}$) as the observed data $\left(Y_\text{obs}, \boldsymbol{X}_{\text{obs}}\right)$. The predictions from the fitted MARS model for the missing observations, $\hat{Y}_\text{mis} = \hat{f}\left(\boldsymbol{X}_\text{mis}\right)$, are then augmented by an error term drawn from a standard normal distribution, scaled by the square root of the mean squared residuals from the MARS fit: 
 
 $$
-\sigma = \frac{1}{n_\text{obs}} \sum_{i=1}^{n_\text{obs}} \left({\dot{Y}}_{\text{obs},i} - \hat{f}\left(\dot{\boldsymbol{X}}_{\text{obs}}\right)\right)^2.
+\hat\sigma = \sqrt{\frac{1}{n_\text{obs}} \sum_{i=1}^{n_\text{obs}} \left({\dot{Y}}_{\text{obs},i} - \hat{f}\left(\dot{\boldsymbol{X}}_{\text{obs}}\right)\right)^2}.
 $$
 
 Hence, the imputed values are given by:
 
 $$
-Y_\text{imp} = \hat{Y}_\text{mis} + \epsilon \cdot \sigma,
+Y_\text{imp} = \hat{Y}_\text{mis} + \epsilon \cdot \hat\sigma,
 $$
 
 where $\epsilon$ is a vector of size $n_\text{mis}$ containing random draws from the standard normal distribution.
@@ -198,7 +198,7 @@ In summary, the simulation study design included `r length(unique(exp_factor$p))
 
 The dataset provided to the MI algorithms included the fully observed variables $U_1,U_2, X_{3},\dots,X_{p+2}$ and the partially missing variable $Y$. To minimize unnecessary variation, the dataset was kept identical across all imputation methods within a single simulation run.
 
-The MI framework used throughout this study was based on the `mice` package [@mice]. Since we dealt with univariate missingness, the number of iterations (`maxit`) in `mice` was set to 1. The number of imputed datasets (argument `m` in `mice`) was set to `r unique(methods_comp$m)`. Additionally, setting the `eps` argument in `mice` to 0, we prevented preliminary filtering of collinear variables.
+The MI framework used throughout this study was based on the `mice` package [@mice]. Since we dealt with univariate missingness, the number of iterations (`maxit`) in `mice` was set to 1. The number of imputed datasets (argument `m` in `mice`) was set to `r unique(exp_factor$m)`. Additionally, setting the `eps` argument in `mice` to 0, we prevented preliminary filtering of collinear variables.
 
 The MI methods used within `mice` include:
 
