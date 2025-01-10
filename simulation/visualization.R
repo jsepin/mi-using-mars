@@ -142,7 +142,7 @@ p_se <- data %>%
               ,x = mice_std.error
               ,fill = method
   ) )+
-  labs(y = "",title = bquote("Standard error: "~SE(hat(mu))[s]), x = ""
+  labs(y = "",title = bquote("Standard error: "~SE(hat(mu)[s])), x = ""
        ,subtitle = bquote(m==.(unique(data$m))~","~Nsim==.(unique(data$Nsim))~"(outliers and whiskers removed for illustration)")
        ,fill ="")+
   geom_label(data = p_desc,aes(x = upper75qu_se, y = method, label = label_se),
@@ -193,7 +193,7 @@ p_coverage <- res_coverage %>%
   ) )+
   labs(y = ""
        ,x = ""
-       ,title = bquote("Coverage: "~abs(hat(mu)[s]-hat(mu)[s]^"(full)")/SE(hat(mu))[s]<z[0.975])
+       ,title = bquote("Coverage: "~abs(hat(mu)[s]-hat(mu)[s]^"(full)")/SE(hat(mu)[s])<z[0.975])
        ,subtitle = bquote(m==.(unique(data$m))~","~Nsim==.(unique(data$Nsim))~", Coverage probability with 95% Wilson confidence interval")
        ,col = "")+
   geom_point()+

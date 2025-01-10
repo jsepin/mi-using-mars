@@ -21,10 +21,10 @@ $$
 where each observed value $x_{i,j}$ of $\boldsymbol{X}$ serves as a knot $t$, generating a set of candidate basis functions:
 
 $$
-\mathcal{C} = \left\{(X_j - t)_+, (t - X_j)_+\right\}_{t \in \{x_{1,j}, x_{2,j}, \dots, x_{N,j}\}, j = 1, 2, \dots, p}
+\mathcal{C} = \left\{(X_j - t)_+, (t - X_j)_+\right\}_{t \in \{x_{1,j}, x_{2,j}, \dots, x_{n,j}\}, j = 1, 2, \dots, p}
 $$
 
-This set can become large, with up to $2Np$ basis functions when all values of $\boldsymbol{X}$ are distinct. Therefore, MARS employs a stepwise model-building process in which $\mathcal{C}$ serves as the pool of candidate predictors. The MARS model is then expressed as:
+This set can become large, with up to $2np$ basis functions when all values of $\boldsymbol{X}$ are distinct. Therefore, MARS employs a stepwise model-building process in which $\mathcal{C}$ serves as the pool of candidate predictors. The MARS model is then expressed as:
 
 $$
 f(\boldsymbol{X}) = \beta_0 + \sum_{k=1}^{K} \beta_k h_k(\boldsymbol{X}),
