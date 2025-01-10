@@ -5,7 +5,7 @@
 gc()
 rm(list = ls())
 if(sessionInfo()$platform=="x86_64-w64-mingw32/x64"){
-  setwd("C:/Users/SepinJ/OneDrive - Universität Luzern/mi-using-mars/simulation")
+  setwd("C:/Users/SepinJ/OneDrive - Universität Luzern/imputation_project/mi-using-mars/simulation")
 }else{
   setwd("/home/jerome/OneDrive/phd/mi-using-mars/simulation")
 }
@@ -232,6 +232,7 @@ save_stuff(p=p$bias,width=10, height=12)
 save_stuff(p=p$se,width=10, height=12)
 save_stuff(p=p$coverage,width=10, height=12)
 
+
 p_secondary <- plot_function(data = res %>%
                                 filter(missing == "non-additive" &
                                          structure == "non-additive" &
@@ -242,10 +243,10 @@ p_secondary <- plot_function(data = res %>%
 p_secondary_combined <- ggarrange(p_secondary$bias+theme(strip.text.y = element_blank())+labs(subtitle = bquote(m==.(unique(res$m))~","~Nsim==.(unique(res$Nsim))))
           , p_secondary$se+theme(strip.text.y = element_blank(), axis.title.y=element_blank(),axis.text.y=element_blank(),axis.ticks.y=element_blank())+labs(subtitle = "(outliers and whiskers removed for illustration)")+scale_x_continuous(expand = expansion(mult=c(0,0.3)))
           , p_secondary$coverage+theme( axis.title.y=element_blank(),axis.text.y=element_blank(),axis.ticks.y=element_blank())+labs(subtitle = "Coverage probability with 95% confidence interval")
-, ncol=3, nrow=1, common.legend = TRUE, legend="bottom",align = "h")
+, ncol=3, nrow=1, common.legend = TRUE, legend="bottom",align = "h",widths = c(1,1,1.075))
 
 p_secondary_combined
-save_stuff(p=p_secondary_combined,width=10, height=8)
+save_stuff(p=p_secondary_combined,width=10, height=8) #10,8
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ## Time ----

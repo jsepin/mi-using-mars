@@ -80,7 +80,7 @@ p <- ggplot(data, aes(x = x, y = y)) +
   geom_point() +
   geom_line(data = grid_melted, aes(x = x, y = value
                                     , color = name, linetype = name),lwd=1) +
-  labs(title = "Comparison of CART, MARS, and GAM predictions"
+  labs(title = "Comparison of CART, GAM, and MARS predictions"
        ,subtitle = expression(y==sin(x)+epsilon~","~epsilon%~%N(0,sigma==0.02))
        ,color = "Model") +
   theme_minimal()+
