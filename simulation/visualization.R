@@ -61,17 +61,17 @@ save_stuff <- function(p,width, height){
   name <- deparse(substitute(p))
   name <- str_replace(name, "\\$","_")
   # saving png
-  png(paste0("../little_sim/figures/",name,".png")
+  png(paste0("../simulation/figures/",name,".png")
       ,width=width, height=height, units = "in"
-      ,res = 100
+      ,res = 1200 #100
   )
   print(p)
   dev.off()
   
   # saving tiff
-  tiff(paste0("../little_sim/figures/",name,".tiff")
+  tiff(paste0("../simulation/figures/",name,".tiff")
        ,width=width, height=height, units = "in"
-       ,res = 800
+       ,res = 1200 #800
        ,compression = "lzw"
   )
   print(p)

@@ -1,0 +1,31 @@
+
+**Author:**
+
+Jerome Sepin
+
+**Correspondence:**
+
+Jerome Sepin, University of Lucerne, Alpenquai 4, Lucerne CH-6005, Switzerland, Email: jerome.sepin\@unilu.ch
+
+**Affiliations:**
+
+University of Lucerne, Faculty of Health Sciences and Medicine
+
+**ORCID:**
+
+Jerome Sepin: <https://orcid.org/0000-0002-8893-8903>
+
+**Targeted journal:**
+
+Journal of Computational and Graphical Statistics
+
+#  {.unnumbered}
+
+**Abstract:**
+
+Handling incomplete data is a common challenge in quantitative research, and multiple imputation (MI) has become a widely adopted solution. However, traditional MI methods can struggle with complex data patterns, potentially leading to biased estimates. To address this, algorithms like random forests, classification and regression trees, and tree-based boosting techniques have been integrated into common imputation tools, improving the preservation of complex data patterns. Despite these advancements, tree-based methods typically require large sample sizes, limiting their efficiency in smaller datasets. Classical regression techniques, including generalized additive models for location, scale, and shape (GAMLSS), have also been applied to MI. While GAMLSS effectively model non-linearities, they require manual specification of interactions and become computationally intensive with many predictors. This paper explores the use of multivariate adaptive regression splines (MARS) within a fully conditional specification MI framework. MARS offers a balance between flexibility and computational speed, efficiently handling continuous variables without requiring the large datasets needed by tree-based models.
+A MARS-based MI algorithm was implemented and evaluated through a comprehensive simulation study, demonstrating that MARS provides promising results, with less bias and better coverage, particularly in scenarios involving complex data patterns.
+
+**Keywords:**
+
+multiple imputation; multivariate adaptive regression splines; simulation study; continuous variables; statistical efficiency

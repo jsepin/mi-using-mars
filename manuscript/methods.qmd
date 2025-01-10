@@ -1,0 +1,233 @@
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+#| label: setup
+library(tidyverse)
+library(xtable)
+library(kableExtra)
+library(gt)
+```
+
+# Brief introduction to MARS {#sec-mars}
+
+To introduce the MARS algorithm, we draw primarily from the explanation provided in @Hastie2017 (pp. 321-326), which offers a more extensive summary of the method and additional theoretical background.
+
+MARS is a flexible, non-parametric regression technique introduced by @Friedman1991. It models the relationship between input variables $\boldsymbol{X} = (X_1, X_2, \dots, X_p)$ and a response variable $Y$ using linear combinations of basis functions. These basis functions, also known as hinge functions, are piecewise linear splines that adapt to the data by fitting different linear segments in regions of the input space where needed.
+
+MARS uses hinge functions of the form:
+
+$$
+(X - t)_+ = \max(0, X - t) \quad \text{and} \quad (t - X)_+ = \max(0, t - X),
+$$
+
+where each observed value $x_{i,j}$ of $\boldsymbol{X}$ serves as a knot $t$, generating a set of candidate basis functions:
+
+$$
+\mathcal{C} = \left\{(X_j - t)_+, (t - X_j)_+\right\}_{t \in \{x_{1,j}, x_{2,j}, \dots, x_{N,j}\}, j = 1, 2, \dots, p}
+$$
+
+This set can become large, with up to $2Np$ basis functions when all values of $\boldsymbol{X}$ are distinct. Therefore, MARS employs a stepwise model-building process in which $\mathcal{C}$ serves as the pool of candidate predictors. The MARS model is then expressed as:
+
+$$
+f(\boldsymbol{X}) = \beta_0 + \sum_{k=1}^{K} \beta_k h_k(\boldsymbol{X}),
+$$
+
+where $h_k(\boldsymbol{X})$ represents a subset of $\mathcal{C}$, and the coefficients $\beta_0$ and $\beta_k$ are estimated through standard optimization methods, such as least squares estimation.
+
+The fitting procedure begins with a **forward pass**, where basis functions are added iteratively until a stopping criterion is met (such as a maximum number of coefficients or an increase in $R^2$). Since this process can lead to overfitting, a **backward pass** is used afterward to prune the model by removing redundant terms.
+
+MARS incorporates interaction terms hierarchically, meaning higher-order interactions are only introduced if the corresponding lower-order terms are already present in the model. The maximum degree of interaction is user-specified, which allows for control over the complexity of the interactions without having to manually specify which variables interact.
+
+In essence, MARS combines elements of both CART and GAM. Compared to CART, MARS is more efficient at modeling continuous variables because hinge functions can adapt more smoothly than CART's binary partitions. However, MARS is not as smooth as GAM models. Both CART and GAM handle interaction terms, with CART doing so recursively and GAM via tensor products that require manual specification. MARS simplifies this by only requiring the user to define the maximum interaction degree, not the specific variable interactions.
+
+While GAM models offer superior smoothness and flexibility, they come with a higher computational cost due to the large number of parameters that must be optimized. MARS, on the other hand, strikes a practical balance between modeling flexibility and computational efficiency, making it a particularly suitable option for tasks like MI and for smaller datasets. @fig-compMARS illustrates the differences between CART, GAM, and MARS in a simple bivariate setting, simulating a continuous sine relationship with normal error.
+
+```{r comparing_MARS}
+#| echo: false
+#| include: false
+#| message: false
+#| warning: false
+
+# Load necessary libraries
+library(ggplot2)
+library(rpart)
+library(earth)
+library(mgcv)
+
+# Create a synthetic dataset
+set.seed(123)
+n <- 200
+x <- runif(n, -3, 3)
+y <- sin(x) + rnorm(n, 0, 0.2)
+data <- data.frame(x, y)
+
+# Fit models
+cart_model <- rpart(y ~ x, data = data)
+mars_model <- earth(y ~ x, data = data)
+gam_model  <- gam(y ~ s(x), data = data)
+
+grid <- data.frame(x = seq(min(data$x), max(data$x), length.out = 100) )
+
+# Predict on the grid for each model
+grid$CART <- predict(cart_model, grid)
+grid$MARS <- predict(mars_model, grid)
+grid$GAM <- predict(gam_model, grid)
+
+# Melt the grid for ggplot
+grid_melted <- grid %>%
+    pivot_longer(cols = -x)
+
+# Plot with ggplot2
+p <- ggplot(data, aes(x = x, y = y)) +
+  geom_point() +
+  geom_line(data = grid_melted, aes(x = x, y = value
+                                    , color = name, linetype = name),lwd=1) +
+  labs(title = "Comparison of CART, MARS, and GAM predictions"
+       ,subtitle = expression(y==sin(x)+epsilon~","~epsilon%~%N(0,sigma==0.02))
+       ,color = "Model") +
+  theme_minimal()+
+  scale_linetype_discrete(c("solid","dotted","twodash"))+
+  guides(colour = guide_legend(override.aes = list(linetype = c("solid","dotted","twodash"))))+
+  scale_linetype(guide = "none")
+
+width <- 9
+height <- 4
+# saving png
+png("../simulation/figures/compMARS.png"
+  ,width=width, height=height, units = "in"
+  ,res = 1200 #100
+)
+print(p)
+dev.off()
+
+# saving tiff
+tiff("../simulation/figures/compMARS.tiff"
+   ,width=width, height=height, units = "in"
+   ,res = 1200 #800
+   ,compression = "lzw"
+)
+print(p)
+dev.off()
+```
+
+![Illustrative comparison of CART, MARS, and GAM predictions in a simple parametric setting. CART exhibits a stepwise prediction pattern, while the GAM provides a fully smooth prediction. MARS predictions offer a balance between the two.](../simulation/figures/compMARS.png){#fig-compMARS fig-align="center"}
+
+The `R` package `mice` allows for user-specified imputation functions in a straightforward manner, making it easy to implement and test alternative MI methods. We implemented the MARS method for MI in a function called `mice.impute.mars` (code available in the supplementary material) using the `R` package `earth` ("Enhanced Adaptive Regression Through Hinges") [@earth] to fit the MARS method.
+
+More formally, focusing on univariate missingness, we defined $Y\in\mathbb{R}^{n\times 1}$ as the partially missing outcome variable, with corresponding predictors $\boldsymbol{X}\in \mathbb{R}^{n \times p}$ that were fully observed. The missingness indicator vector was denoted by $M$, where $m_i=1$ indicated that $y_i$ was missing and $m_i=0$ indicated that $y_i$ was observed. Thus, $Y_{\text{obs}}$ and $\boldsymbol{X}_{\text{obs}}$ represent the observed subset of $Y$ and $\boldsymbol{X}$ (i.e., where $M=0$), while $Y_{\text{mis}}$ and $\boldsymbol{X}_{\text{mis}}$ represent the missing subset (i.e., where $M=1$).
+
+Data can be missing completely at random (MCAR) if the probability of missingness is independent of both observed and unobserved data, missing at random (MAR) if it depends only on observed data, or missing not at random (MNAR) if it depends on unobserved information such as the partially missing variable $Y$ itself. Our implementation of the MARS method was designed to handle missing data under the MAR assumption, implying that it could also operate under the MCAR assumption.
+
+<!-- To ensure the imputations were statistically proper as defined by @Rubin1987 (p. 118), we accounted for the uncertainty arising from missing data. We achieved this by fitting the MARS method on a bootstrapped sample of the observed dataset and using the resulting predictions, augmented by an error term, to impute the missing values. For continuous variables, the error term was drawn from a standard normal distribution and scaled by the mean squared residuals from the MARS fit. -->
+
+To ensure the imputations were statistically proper as defined by @Rubin1987 (p. 118), we accounted for the uncertainty arising from missing data.
+We achieved this by fitting the MARS model on a bootstrapped sample $\left(\dot{Y}_\text{obs}, \dot{\boldsymbol{X}}_{\text{obs}}\right)$, with the same number of observations ($n_\text{obs}$) as the observed data $\left(Y_\text{obs}, \boldsymbol{X}_{\text{obs}}\right)$. The predictions from the fitted MARS model for the missing observations, $\hat{Y}_\text{mis} = \hat{f}\left(\boldsymbol{X}_\text{mis}\right)$, are then augmented by an error term, which is drawn from a standard normal distribution and scaled by the mean squared residuals from the MARS fit: 
+
+$$
+\sigma = \frac{1}{n_\text{obs}} \sum_{i=1}^{n_\text{obs}} \left({\dot{Y}}_{\text{obs},i} - \hat{f}\left(\dot{\boldsymbol{X}}_{\text{obs}}\right)\right)^2.
+$$
+
+Hence, the imputed values are given by:
+
+$$
+Y_\text{imp} = \hat{Y}_\text{mis} + \epsilon \cdot \sigma,
+$$
+
+where $\epsilon$ is a vector of size $n_\text{mis}$ containing random draws from the standard normal distribution.
+
+<!-- For categorical variables, the predicted probabilities for each class were used as weights to sample the imputed values. -->
+
+By default, the MARS method in this implementation is specified to include interactions up to a maximum degree of 10, as allowed by the current implementation of the `earth` function (i.e., `degree=10`). However, users can adjust this setting to restrict the model to lower-degree interactions or entirely additive terms.
+
+# Simulation study {#sec-simulation}
+
+## Data and missingness generation
+
+```{r}
+#| echo: false
+
+# setwd("C:/Users/SepinJ/OneDrive - Universität Luzern/imputation_project/01_mi/manuscript")
+# reading in experimental factors
+exp_factor <- readRDS("../simulation/results/exp_factor.RDS")
+methods_comp <- readRDS("../simulation/results/methods_comp.RDS")
+
+myenu <- function(x,sep = "or"){
+    x <- unique(x)
+   if(length(x)==1){
+       return(x)
+       }else{
+       xstart <- paste0(x[1:(length(x)-1)],collapse = ", ")
+       xend   <- paste0(x[length(x)],collapse = ", ")
+       x_sent <- paste(xstart,sep,xend)
+       return(x_sent)
+   } 
+}
+# myenu(x = 1:5,sep = "and")
+
+```
+
+The data generation process of the simulation study was closely based on the second simulation study conducted by @Little2004, with the exception that we included situations with a large number of candidate predictors (high $p$ compared to $n$). We focused on a single partially missing variable $Y$ and examined the simple estimator of the mean of $Y$, hence the estimand of interest was $\mu=\mathbb{E}(Y)$. For each simulation run, the data generation process was newly executed.
+
+To make the imputation task more challenging, we introduced noise variables generated from a multivariate standard normal distribution that had no impact on the data generation process. Specifically, independent variables $\boldsymbol{X}=\left(X_1,\dots,X_{p+2}\right)\in\mathbb{R}^{n\times p+2}$ were generated by drawing $n=$ `r min(exp_factor$n)` observations from a multivariate standard normal distribution $\mathcal{N}_{p+2}\left(0,I_{p+2}\right)$ where $p$ was one of the experimental factors in our simulation study taking on the values `r myenu(exp_factor$p)`.
+
+To align more closely with @Little2004, the first two variables $X_1$ and $X_2$, were transformed into realizations from a uniform distribution on the range $[-1,1]$ using the transformation $U_j=2\left(\Phi(X_j)-0.5\right)$ for $j=1,2$ where $\Phi$ is the cumulative distribution function of the standard normal distribution.
+
+The partially missing variable $Y$ was then generated from the two fully observed variables $U_1$ and $U_2$ under the following conditions:
+
+1.  constant: $\mathcal{N}(10,2^2)$
+
+2.  linear: $\mathcal{N}(10\left(1+U_1+3U_2\right),2^2)$
+
+3.  additive: $\mathcal{N}(118+\left(3U_1-3\right)^3+\left(3U_2-3\right)^3,2^2)$
+
+4.  non-additive: $\mathcal{N}(10\left(1+U_1+U_2+4U_1U_2\right),2^2)$
+
+which means that the expected value for all mean structures was 10 ($\mu=\mathbb{E}(Y)=10$). The missingness in $Y$ was generated under the following probability functions $\mathbb{P}$, which included both MAR and MCAR mechanisms:
+
+1.  constant: $\mathbb{P}(M=0\mid U_1,U_2)=0.5$ (MCAR)
+
+2.  linear: $\mathbb{P}(M=0\mid U_1,U_2)=\text{expit}\left(U_1+U_2\right)$ with $\text{expit}(.)=\frac{\exp(.)}{1+\exp(.)}$
+
+3.  additive: $\mathbb{P}(M=0\mid U_1,U_2)=\text{expit}\left(U_1^3+U_2^3\right)$
+
+4.  non-additive: $\mathbb{P}(M=0\mid U_1,U_2)=\text{expit}\left(U_1+U_2+3U_1U_2\right)$
+
+where realizations $m_i=1$ indicated $y_i$ as missing, and $m_i=0$ indicated $y_i$ as non-missing. Hence, the expected missingness probability was 0.5 across all conditions.
+
+In summary, the simulation study design included `r length(unique(exp_factor$p))` different amounts of noise variables, `r length(unique(exp_factor$structure))` data generation strategies, and `r length(unique(exp_factor$missing))` missingness generation strategies, resulting in a full factorial design with `r nrow(exp_factor %>% filter(n==100))` experimental conditions.
+
+## Multiple imputation methods
+
+The dataset provided to the MI algorithms included the fully observed variables $U_1,U_2, X_{3},\dots,X_{p+2}$ and the partially missing variable $Y$. To minimize unnecessary variation, the dataset was kept identical across all imputation methods within a single simulation run.
+
+The MI framework used throughout this study was based on the `mice` package [@mice]. Since we dealt with univariate missingness, the number of iterations (`maxit`) in `mice` was set to 1. The number of imputed datasets (argument `m` in `mice`) was set to `r unique(methods_comp$m)`. Additionally, setting the `eps` argument in `mice` to 0, we prevented preliminary filtering of collinear variables.
+
+The MI methods used within `mice` include:
+
+-   **MARS** (Multivariate Adaptive Regression Splines)
+
+-   **CART** (Classification and Regression Trees)
+
+-   **RF** (Random Forest)
+
+In addition to these methods, we also applied more classical methods:
+
+-   **Linear Regression with LASSO-selected variables (lasso.select.norm)**, as described in @Zhao2016 and @Deng2016 (indirect use of regularized regression).
+
+-   **Predictive Mean Matching (PMM)**.
+
+Furthermore, we applied the XGBoost algorithm for MI with subsampling as implemented in the `mixgb` package [@Deng2023].
+
+## Performance evaluation
+
+Let $\hat{\mu}_{s}$ denote the pooled estimate for $\mu$ after multiple imputations for any simulation repetition $s=1,\dots,N_\text{sim}$, where $N_\text{sim}$ was set to `r unique(methods_comp$Nsim)`. To evaluate the performance of each MI method, we used the following summary statistics:
+
+-   **Mean and Standard Deviation of Bias**: The bias was calculated as $\hat{\mu}_{s} - \hat{\mu}_{s}^\text{(full)}$, where $\hat{\mu}_{s}^\text{(full)}$ represents the full-data estimate (i.e., before the introduction of missingness). We reported the mean and standard deviation of the biases for each method and experimental condition.
+
+-   **Mean and Standard Deviation of the Standard Error (SE)**: The standard error of $\hat{\mu}_{s}$, denoted by $\text{SE}\left(\hat{\mu}_{s}\right)$, was computed. We reported the mean and standard deviation of the standard errors for each method and experimental condition.
+
+-   **Coverage of the 95% Confidence Interval**: Coverage was assessed by checking whether the full-data estimate, $\hat{\mu}_s^\text{(full)}$ (treated as fixed), fell within the 95% confidence interval of $\hat{\mu}_{s}$. This was evaluated using the criterion: $\mid\frac{\hat{\mu}_{s}-\hat{\mu}_s^\text{(full)}}{\text{se}\left(\hat{\mu}_{s}\right)}\mid< z_{0.975}$ , where $z_{0.975}$ is the 0.975 quantile of the standard normal distribution. The overall coverage for each method and experimental condition was quantified as the percentage of simulations where this criterion was satisfied. A 95% Wilson confidence interval was computed to quantify the uncertainty in the observed coverage rate.
+
+In addition, we recorded the computation time required for each imputation method.
+
+## Secondary simulation: Increasing sample sizes
+
+Preliminary results indicated that the most challenging experimental condition involved the combination of a non-additive mean structure, a non-additive missingness mechanism, and `r max(exp_factor$p)` noise explanatory variables. To explore whether increasing the sample size could mitigate these difficulties, we expanded the initial sample size of `r min(exp_factor$n)` to include larger sizes of `r myenu(x = names(table(exp_factor$n))[table(exp_factor$n)==1],sep = "and")` for this experimental condition. The MI methods and performance evaluations remained consistent with those used in the primary simulation study.

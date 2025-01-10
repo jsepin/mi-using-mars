@@ -1,0 +1,66 @@
+project:
+  type: book
+
+book:
+  page-navigation: true
+  title: "Multiple imputation using multivariate adaptive regression splines"
+  # author: "Jerome Sepin"
+  date: last-modified
+  chapters:
+    - index.qmd
+    - introduction.qmd
+    - methods.qmd
+    - results.qmd
+    - discussion.qmd
+    - references.qmd
+  # appendices:
+  #   - appendix.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    cite-method: natbib
+    documentclass: scrreprt
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \usepackage{soul}
+        \usepackage{hyperref}
+        \usepackage[capitalise,noabbrev]{cleveref}
+        \usepackage{makeidx}
+        \makeindex
+    include-after-body:
+      text: |
+        \printindex
+  docx:
+    reference-doc: custom-reference.docx
+    cite-method: citeproc # otherwise does not work!
+    documentclass: scrreprt
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \usepackage{soul}
+        \usepackage{hyperref}
+        \usepackage[capitalise,noabbrev]{cleveref}
+        \usepackage{makeidx}
+        \makeindex
+    include-after-body:
+      text: |
+        \printindex
+# editor: visual
+toc-depth: 3
+toc: false # no table of content
+
+# crossref:
+#   fig-prefix: figure   # (default is "Figure") works!
+#   sec-prefix: Section  # (default is "Chapter") does not work!
+
+
+execute:
+  warning: false
+  message: false
+  error: false
+

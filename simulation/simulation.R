@@ -29,8 +29,8 @@ meta <- list("Y_mean_true" = 10, "cores" = cores)
 analysis_form <- "y ~ 1" 
 
 methods_comp <- expand.grid(
-  method = c("cc", "full","mars","mixgb","cart")#,"rf","lasso.select.norm", "pmm")
-  ,Nsim = 100 # 500
+  method = c("cc", "full","mars","mixgb","cart","rf","lasso.select.norm", "pmm")
+  ,Nsim = 500
   ,stringsAsFactors = FALSE
 ) %>%
   arrange(method)
@@ -44,7 +44,7 @@ exp_factor <- expand.grid(
   ,p = c(10,100)
   ,rho = 0
   ,n= 100
-  ,m = 50#30
+  ,m = 50
   ,stringsAsFactors = FALSE
 ) 
 exp_factor2 <- expand.grid(
@@ -54,7 +54,7 @@ exp_factor2 <- expand.grid(
   ,p = 100
   ,rho = 0 
   ,n= c(200,400,800)
-  ,m = 50#30
+  ,m = 50
   ,stringsAsFactors = FALSE
 )
 

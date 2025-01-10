@@ -1,0 +1,80 @@
+# Results {#sec-results}
+
+```{r echo=FALSE, eval = T, message=FALSE, warning=F}
+#| label: setup
+
+require(tidyverse)
+require(knitr)
+require(english)
+require(flextable)
+
+meta <- readRDS("../simulation/results/meta.RDS")
+methods_comp <- readRDS("../simulation/results/methods_comp.RDS")
+exp_factor <- readRDS("../simulation/results/exp_factor.RDS")
+
+my_time_english <- function(x){
+    # x = meta$time
+    paste(as.english(as.numeric(x)), attributes(x)$units)
+}
+
+```
+## Performance of MI methods in the primary design
+
+We conducted a simulation study following closely the methodology outlined by @Little2004 to compare the performance of the MARS method for MI against other widely-used MI methods. These methods were chosen for their flexibility and ability to handle complex data patterns. @tbl-qualitative_assessment presents a preliminary qualitative assessment and summary of the performance of the different MI methods compared here.
+
+```{r}
+#| label: tbl-qualitative_assessment
+#| echo: false
+#| tbl-cap: "**Qualitative overall assessment across MI methods:** (++) very good performance, (+) good performance, (-) satisfactory performance, (--) least satisfactory performance. Overall, MARS achieved the lowest bias and best coverage, though it had relatively large standard errors and moderate computation time. The XGBoost-based MI method (MixGB) and CART showed moderate bias, but CART was considerably faster. RF and PMM displayed the least satisfactory performance overall. The linear regression-based MI method with LASSO-selected variables (lasso.select.norm) performed well in terms of bias and coverage but had relatively long computation times."
+
+# create qualitative assessment table
+dd <- data.frame(
+  Method = c("mars", "mixgb", "cart", "rf", "pmm", "lasso.select.norm"),
+  Bias = c("++", "-", "-", "--", "--", "+"),
+  Standard_error = c("-", "+", "+", "-", "-", "-"),
+  Coverage = c("++", "+", "+", "-", "+", "+"),
+  Time = c("--", "--", "++", "++", "++", "-")
+)
+ft <- flextable(dd)
+ft <- align(ft, align = "left", part = "all")
+ft <- bold(ft, part = "header")
+ft <- autofit(ft)
+ft <- set_header_labels(ft, Standard_error = "Standard error")
+ft
+```
+
+To assess the bias of each imputation method, we compared the coefficient estimates from different MI implementations against the full-data estimate, which was expected to be 10. As a baseline, we also computed estimates from the complete cases (cc), where missing observations were simply omitted. 
+All imputation methods produced complete imputed datasets, with no persisting missing values.
+
+@fig-bias provides a visual comparison of these biases. As expected, the complete case estimates generally exhibited the largest biases across most experimental conditions when compared to those obtained from MI methods. The MI methods, including MARS, consistently produced estimates closer to the true parameter value, indicating their effectiveness in reducing bias that arise from missing data.
+
+![Bias in coefficient estimates across MI methods: This figure shows the bias of coefficient estimates across different MI methods over `r unique(methods_comp$Nsim)` simulation runs under various experimental conditions. Bias was calculated as the difference between the pooled estimated coefficient and the full-data estimate. The figure also includes comparisons to biases from complete cases (cc; where missing data were omitted). As expected, complete case estimates generally display the largest biases, indicating a significant deviation from the true value except in the MCAR scenarios, while most MI methods, including MARS, demonstrated lower biases.](../simulation/figures/p_bias.png){#fig-bias fig-align="center" width="100%"}
+
+@fig-se illustrates the standard errors associated with each imputation method. As expected, most MI methods showed larger standard errors compared to the full-data standard error. This increase is typical, as proper imputation incorporates both within- and between-imputation variance, leading to higher uncertainty. 
+
+The MARS-based MI algorithm exhibited relatively high standard errors in certain experimental conditions, suggesting a bias-variance trade-off in the selection of MI methods. 
+This observation calls for further investigation of the conditions under which MARS excels or underperforms relative to other MI methods.
+
+![Standard error across MI method: This figure shows the standard errors of coefficient estimates across different MI methods over `r unique(methods_comp$Nsim)` simulation runs under various experimental conditions. Compared to the full-data standard error, most MI methods exhibited larger standard errors due to the incorporation of both within- and between-imputation variance. The MARS-based MI algorithm, in particular, demonstrated relatively high standard errors in certain experimental conditions, reflecting a higher degree of variability in its estimates.](../simulation/figures/p_se.png){#fig-se fig-align="center" width="100%"}
+
+We evaluated the coverage of the 95% confidence intervals for each imputation method, as shown in @fig-coverage. Ideally, the coverage should be close to 95%. However, in many cases, the coverage for some imputation methods fell below this threshold, indicating potential issues with underestimation of uncertainty of imputing missing data. In contrast, the MARS-based MI algorithm did not underestimate uncertainty and consistently achieved coverage rates closer to the desired 95% target.
+
+![Coverage of 95% confidence intervals across MI method: This figure displays the coverage rates of 95% confidence intervals for coefficient estimates across different MI methods over `r unique(methods_comp$Nsim)` simulation runs under various experimental conditions. The plot illustrates how well the coverage of these intervals meets the 95% target. In many experimental conditions, some imputation methods fell short of this target, indicating potential underestimation of uncertainty. The MARS-based MI algorithm, however, generally achieved coverage rates closer to the 95% target.](../simulation/figures/p_coverage.png){#fig-coverage fig-align="center" width="100%"}
+
+## Results of secondary simulation: Increasing sample size
+
+In the secondary simulation study, we investigated whether increasing sample size could improve MI performance in the most challenging scenario identified in preliminary simulations. This scenario involved a non-additive mean structure, a non-additive missingness mechanism, and `r max(exp_factor$p)` noise explanatory variables.
+
+As illustrated in @fig-p_secondary_combined, increasing the sample size did not considerably improve the performance of more traditional approaches (lasso.select.norm and pmm). However, methods with the potential to adapt to complex data patterns (rf, cart, mixgb, and mars) showed marked improvements, including reduced bias, lower standard errors, and higher coverage. The degree of improvement varied across methods, with the MARS-based MI algorithm demonstrating the fastest convergence to nearly unbiased estimates, while consistently maintaining coverage around 95%.
+
+![Impact of the sample size: This figure displays the impact of increasing sample size on the bias, standard error, and coverage rates of 95% confidence intervals for coefficient estimates across different MI methods over `r unique(methods_comp$Nsim)` simulation runs under the most challenging experimental conditions. The figure illustrates that increasing sample size was only beneficial for MI methods with sufficient flexibility to adapt to complex data patterns (such as mars, rf, cart, and mixgb), resulting in reduced bias, lower standard error and improved coverage. Notably, the MARS-based MI algorithm achieved the fastest convergance to satisfactory performance.](../simulation/figures/p_secondary_combined.png){#fig-p_secondary_combined fig-align="center" width="100%"}
+
+## Results of imputation time
+
+Finally, we recorded the time required for each imputation method to complete, as shown in @fig-time.
+The imputations were performed on a desktop computer equipped with an Intel Core i7-14700 CPU (max. 5.4 GHz), 32 GB RAM, and running Ubuntu 24.04.1 LTS (64-bit). The analyses were conducted in R version 4.4.2, with parallel processing across `r meta$cores` cores for all computations. The entire simulation study took approximately `r my_time_english(x = meta$time)` to complete. Overall, the time taken for imputations increased with the number of explanatory variables. While most of the MI methods performed similarly in terms of imputation time, the MARS- and XGBoost-based MI methods had relatively long imputation times, which also increased with sample size. The LASSO-based MI method was relatively slow on average, but its performance remained stable with respect to sample size.
+
+![Time required for imputation methods: This boxplot displays the distribution of individual imputation times for each method across `r unique(methods_comp$Nsim)` simulation runs, showing the time taken to construct $m=$ `r unique(methods_comp$m)` imputed datasets for univariate missingness.](../simulation/figures/p_time.png){#fig-time fig-align="center" width="70%"}
+
+
+

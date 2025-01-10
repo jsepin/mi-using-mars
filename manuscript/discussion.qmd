@@ -1,0 +1,27 @@
+# Discussion {#sec-discussion}
+
+In this study, we developed and evaluated a FCS MI algorithm based on the MARS method and compared its performance against other established MI methods through a simulation study. Our findings suggest that the MARS-based MI algorithm performed well, particularly in terms of bias, and is the only method that consistently achieves the targeted coverage level. This is a noteworthy result, as coverage accuracy is a critical criterion for evaluating the validity of MI methods, ensuring that confidence intervals are appropriately calibrated to reflect true parameter uncertainty [@Rubin1987].
+
+One aspect that likely contributed to the strong coverage performance of the MARS-based MI algorithm is its relatively higher standard errors compared to other MI methods. Achieving a balance between accuracy and efficiency remains a key challenge in the development of imputation algorithms, and future research should investigate the bias-variance trade-off in more detail to explore ways to improve the efficiency of the MARS-based MI algorithm without sacrificing its coverage properties.
+
+Despite the promising results for the MARS-based MI algorithm, our study also has limitations. First, we focus exclusively on univariate missingness in a continuous outcome, which may not fully reflect the complexity of real-world data where missingness can occur across multiple variables, including both continuous and categorical types. Second, our simulation study is restricted to continuous explanatory variables. While continuous variables are prominent in many fields, categorical variables also play an important role and may pose distinct challenges for imputation, where other MI methods could perform better. Future research should evaluate the robustness of the MARS-based MI algorithm in more varied settings, including multivariate missingness and datasets with mixed variable types.
+
+Furthermore, our study does not address situations where the missingness mechanism is not MAR, such as when missingness depends on the outcome variable itself. This presents a significant area for further exploration, as MI methods often assume MAR, and deviations from this assumption can lead to biased results. Investigating the application and performance of the MARS-based MI method under MNAR conditions could provide valuable insights into its broader applicability.
+
+In conclusion, our study demonstrates that the MARS-based MI algorithm is a promising addition to the existing toolkit of MI methods, particularly in scenarios where achieving accurate coverage is paramount. However, further research is needed to enhance its efficiency and evaluate its performance in more complex and varied data settings.
+
+## Acknowledgments {.unnumbered}
+
+I would like to thank Stefan Boes for valuable discussions.
+
+## Funding {.unnumbered}
+
+This research received no specific funding.
+
+## Disclosure statement {.unnumbered}
+
+The author declares no conflicts of interest.
+
+## Data availability statement {.unnumbered}
+
+All material to reproduce the simulation study is available on Github: <https://github.com/jsepin/mi-using-mars>
