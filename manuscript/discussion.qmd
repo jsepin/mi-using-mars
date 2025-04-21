@@ -10,18 +10,37 @@ Furthermore, our study does not address situations where the missingness mechani
 
 In conclusion, our study demonstrates that the MARS-based MI algorithm is a promising addition to the existing toolkit of MI methods, particularly in scenarios where achieving accurate coverage is paramount. However, further research is needed to enhance its efficiency and evaluate its performance in more complex and varied data settings.
 
-## Acknowledgments {.unnumbered}
+# Declaration
 
-I would like to thank Stefan Boes for valuable discussions.
+## Ethics approval and consent to participate {.unnumbered}
+
+Not applicable
+
+## Consent for publication {.unnumbered}
+
+Not applicable
+
+## Availability of data and materials {.unnumbered}
+
+All material to reproduce the simulation study is available on Github: <https://github.com/jsepin/mi-using-mars>
+
+## Competing interests {.unnumbered}
+
+The author declares no competing interests.
 
 ## Funding {.unnumbered}
 
 This research received no specific funding.
 
-## Disclosure statement {.unnumbered}
+## Authors' contributions {.unnumbered}
 
-The author declares no conflicts of interest.
+The author confirms the sole responsibility for the conception of the study, presented results and
+manuscript preparation.
 
-## Data availability statement {.unnumbered}
+## Acknowledgments {.unnumbered}
 
-All material to reproduce the simulation study is available on Github: <https://github.com/jsepin/mi-using-mars>
+I would like to thank Stefan Boes for valuable discussions.
+
+
+
+

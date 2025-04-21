@@ -17,7 +17,7 @@ Jerome Sepin: <https://orcid.org/0000-0002-8893-8903>
 
 **Targeted journal:**
 
-Journal of Computational and Graphical Statistics
+BMC Medical Research Methodology
 
 #  {.unnumbered}
 

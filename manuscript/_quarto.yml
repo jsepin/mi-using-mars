@@ -36,7 +36,7 @@ format:
       text: |
         \printindex
   docx:
-    reference-doc: custom-reference.docx
+    reference-doc: custom-reference-doc.docx
     cite-method: citeproc # otherwise does not work!
     documentclass: scrreprt
     include-in-header:
