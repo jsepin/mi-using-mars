@@ -8,7 +8,9 @@ library(gt)
 
 # Brief introduction to MARS {#sec-mars}
 
-To introduce the MARS algorithm, we draw primarily from the explanation provided in @Hastie2017 (pp. 321-326), which offers a more extensive summary of the method and additional theoretical background.
+<!-- To introduce the MARS algorithm, we draw primarily from the explanation provided in @Hastie2017 (pp. 321-326), which offers a more extensive summary of the method and additional theoretical background. -->
+To introduce the MARS algorithm, we draw primarily on the explanation provided by @Hastie2017 (pp. 321-326), which offers a more extensive summary of the method and additional theoretical background.
+
 
 MARS is a flexible, non-parametric regression technique introduced by @Friedman1991. It models the relationship between input variables $\boldsymbol{X} = (X_1, X_2, \dots, X_p)$ and a response variable $Y$ using linear combinations of basis functions. These basis functions, also known as hinge functions, are piecewise linear splines that adapt to the data by fitting different linear segments in regions of the input space where needed.
 

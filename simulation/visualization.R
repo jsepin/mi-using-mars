@@ -134,7 +134,13 @@ p_bias <- data %>%
     )+
     guides(fill = guide_legend(nrow = 1))+
     labs(x = NULL)+
-    scale_x_continuous(expand = expansion(mult=c(0,0.8)))
+    scale_x_continuous(expand = expansion(mult=c(0,0.8)))+
+    scale_y_discrete(labels = function(x) {
+      ifelse(x == "mars",
+             expression(bold("★mars")),
+             x)
+    })
+
 
 # standard error
 p_se <- data %>%
@@ -160,7 +166,12 @@ p_se <- data %>%
   )+
   guides(fill = guide_legend(nrow = 1))+
   labs(x = NULL)+
-  scale_x_continuous(expand = expansion(mult=c(0,0.6)))
+  scale_x_continuous(expand = expansion(mult=c(0,0.6)))+
+  scale_y_discrete(labels = function(x) {
+    ifelse(x == "mars",
+           expression(bold("★mars")),
+           x)
+  })
 
 # Coverage
 mycov <- function(x){
@@ -218,7 +229,13 @@ p_coverage <- res_coverage %>%
                      ,expand = expansion(mult=c(0,0.95))
   )+
   theme(axis.text.x = element_text(angle=90,vjust = 0.5))+
-  labs(x = NULL)
+  labs(x = NULL)+
+  scale_y_discrete(labels = function(x) {
+    ifelse(x == "mars",
+           expression(bold("★mars")),
+           x)
+  })
+
   return(list("bias" = p_bias, "se" = p_se, "coverage" = p_coverage))
 }
 
@@ -303,7 +320,12 @@ p_time <- res %>%
     )+
     guides(fill = guide_legend(nrow = 1))+
     scale_x_continuous(expand = expansion(mult=c(0,0.15)))+
-    scale_fill_manual(values = cols[-c(1:2)] )
+    scale_fill_manual(values = cols[-c(1:2)] )+
+    scale_y_discrete(labels = function(x) {
+      ifelse(x == "mars",
+             expression(bold("★mars")),
+             x)
+    })
 
 p_time
 save_stuff(p=p_time,width=8, height=8) 
@@ -370,7 +392,12 @@ p_withinvar <- res %>%
   )+
   guides(fill = guide_legend(nrow = 1))+
   scale_fill_manual(values = cols[-c(1:2)] )+
-  labs(x = NULL)
+  labs(x = NULL)+
+  scale_y_discrete(labels = function(x) {
+    ifelse(x == "mars",
+           expression(bold("★mars")),
+           x)
+  })
 
 p_betweenvar <- res %>%
   filter(!method %in% c("cc","full")) %>%
@@ -398,7 +425,12 @@ p_betweenvar <- res %>%
   )+
   guides(fill = guide_legend(nrow = 1))+
   scale_fill_manual(values = cols[-c(1:2)] )+
-  labs(x = NULL)
+  labs(x = NULL)+
+  scale_y_discrete(labels = function(x) {
+    ifelse(x == "mars",
+           expression(bold("★mars")),
+           x)
+  })
 
 return(list("within" = p_withinvar, "between"=p_betweenvar))
 
